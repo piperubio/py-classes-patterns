@@ -1,17 +1,22 @@
 from __future__ import annotations
 from abc import ABC
-from typing import NewType
+from typing import Annotated, NewType
 
 import pydantic
 
 
-NumberOfFilaments = NewType("NumberOfFilaments", pydantic.conint(gt=0))
-Attenuation = NewType("Attenuation", pydantic.confloat(gt=0))
+NumberOfFilaments = NewType(
+    "NumberOfFilaments",
+    Annotated[int, pydantic.Field(gt=0)]
+)
+Attenuation = NewType(
+    "Attenuation",
+    Annotated[float, pydantic.Field(gt=0)]
+)
 
 
 class TechSpec(pydantic.BaseModel, ABC):
-    class Config:
-        frozen = True
+    model_config = pydantic.ConfigDict(frozen=True)
 
 
 class AttenuationTechSpec(TechSpec):
@@ -20,10 +25,10 @@ class AttenuationTechSpec(TechSpec):
 
     @ classmethod
     def from_primitives(cls, primitives: dict) -> AttenuationTechSpec:
-        return cls(**primitives)
+        return cls.model_validate(primitives)
 
     def to_primitives(self) -> dict:
-        return self.dict()
+        return self.model_dump()
 
 
 class NumberOfFilamentsTechSpec(TechSpec):

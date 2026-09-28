@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [{ name = "krouw", email = "felipe.andrez@live.cl" }]
 requires-python = ">=3.9"
 dependencies = [
-    "pydantic>=1.9.0,<2.0.0",
+    "pydantic>=2.13.0,<3.0.0",
     "nanoid>=2.0.0,<3.0.0",
     "attrs>=21.4.0,<22.0.0",
     "cattrs>=1.10.0,<2.0.0",
