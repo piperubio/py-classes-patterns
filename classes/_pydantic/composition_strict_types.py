@@ -1,72 +1,52 @@
+from typing import Annotated
+
 import pydantic
 
+"""
+pydantic v2 removed ConstrainedFloat, ConstrainedStr and ConstrainedInt,
+constraints are declared with Annotated instead
+"""
 
-class DistanceStrictType(pydantic.ConstrainedFloat):
-    ge = 0
-
-
-class LabelStrictType(pydantic.ConstrainedStr):
-    min_length = 1
-    max_length = 16
-
-
-class OrderStrictType(pydantic.ConstrainedInt):
-    gt = 0
+DistanceStrictType = Annotated[float, pydantic.Field(ge=0)]
+LabelStrictType = Annotated[
+    str,
+    pydantic.StringConstraints(min_length=1, max_length=16)
+]
+OrderStrictType = Annotated[int, pydantic.Field(gt=0)]
 
 
 class UnitStrictType(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(frozen=True)
+
     label: LabelStrictType
     distance_to_distribution_board: DistanceStrictType
     distance_to_main_enclosure_one: DistanceStrictType
     distance_to_main_enclosure_two: DistanceStrictType
 
-    class Config:
-        frozen = True
-
 
 class LevelStrictType(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(frozen=True)
+
     label: LabelStrictType
     order: OrderStrictType
     distance_to_lower_link: DistanceStrictType
     distance_to_upper_link: DistanceStrictType
     units: frozenset[UnitStrictType]
 
-    class Config:
-        frozen = True
-
-    def to_primitives(self):
-        return {
-            'label': self.label,
-            'order': self.order,
-            'distance_to_lower_link': self.distance_to_lower_link,
-            'distance_to_upper_link': self.distance_to_upper_link,
-            'units': [unit.dict() for unit in self.units]
-        }
-
 
 class BuildingStrictType(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(frozen=True)
+
     label: LabelStrictType
     levels: frozenset[LevelStrictType]
 
-    class Config:
-        frozen = True
-
     @classmethod
-    def from_primitives(cls, primitives):
-        return cls(
-            **primitives,
-        )
+    def from_primitives(cls, primitives: dict):
+        return cls.model_validate(primitives)
 
-    def to_primitives(self):
+    def to_primitives(self) -> dict:
         """
-        unhashable type: dict when use frozenset
-        self.dict()
+        model_dump() keeps frozensets and fails with
+        "unhashable type: dict", json mode turns them into lists
         """
-        b_dict = dict(self)
-        l_list = []
-        for level in self.levels:
-            l_list.append(level.to_primitives())
-        return {
-            **b_dict,
-            "levels": l_list,
-        }
+        return self.model_dump(mode="json")

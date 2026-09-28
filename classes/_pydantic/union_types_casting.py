@@ -19,43 +19,22 @@ class TypeA3(pydantic.BaseModel):
 
 
 class TypeA(pydantic.BaseModel):
+    """
+    pydantic v2 validates unions in "smart" mode by default:
+    the member with the most valid fields set wins,
+    so the right type is chosen without a tag
+    (pydantic v1 cast always to TypeA1)
+    """
     value: Union[TypeA1, TypeA2, TypeA3]
 
-    """
-    not working:
     @classmethod
     def from_primitives(cls, primitives: dict):
-        return cls(**primitives) """
-
-    """
-    not working:
-    pydantic cast always to TypeA1
-    """
-    @classmethod
-    def from_primitives(cls, primitives: dict):
-        if primitives["value"]["__type"] == "TypeA1":
-            return TypeA(value=TypeA1(**primitives["value"]))
-        elif primitives["value"]["__type"] == "TypeA2":
-            return TypeA(
-                value=TypeA2(
-                    **primitives["value"]
-                )
-            )
-        elif primitives["value"]["__type"] == "TypeA3":
-            return TypeA(
-                value=TypeA3(
-                    a1=primitives["value"]["a1"],
-                    a2=primitives["value"]["a2"],
-                    a3=primitives["value"]["a3"]
-                )
-            )
-        else:
-            raise ValueError(f"Unknown type {primitives['value']['__type']}")
+        return cls.model_validate(primitives)
 
     def to_primitives(self):
         return {
             "__type": self.value.__class__.__name__,
-            **self.value.dict()
+            **self.value.model_dump()
         }
 
 
@@ -76,10 +55,11 @@ class TypeB3(pydantic.BaseModel):
 
 
 class TypeB(pydantic.BaseModel):
+    """
+    TypeB1 and TypeB2 have the same fields, smart mode cannot tell them
+    apart from the data, so the "__type" tag is used to pick the class
+    """
     value: Union[TypeB1, TypeB2, TypeB3]
-
-    class Config:
-        smart_union = True
 
     @classmethod
     def from_primitives(cls, primitives: dict):
@@ -102,9 +82,8 @@ class TypeB(pydantic.BaseModel):
 
 
 """
-
-
-Type field cannot be __type
+Type field cannot be __type,
+pydantic treats fields starting with an underscore as private attributes
 """
 
 
@@ -128,13 +107,13 @@ class TypeC3(pydantic.BaseModel):
 
 TypeC = Annotated[
     Union[TypeC1, TypeC2, TypeC3],
-    pydantic.Field(discriminator="__type")
+    pydantic.Field(discriminator="type")
 ]
 
 
 class TypeCBase(pydantic.BaseModel):
-    value: Union[TypeC1, TypeC2, TypeC3]
+    value: TypeC
 
     @classmethod
-    def from_primitives(cls, value: dict):
-        return cls(**value)
+    def from_primitives(cls, primitives: dict):
+        return cls.model_validate(primitives)

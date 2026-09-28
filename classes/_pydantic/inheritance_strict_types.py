@@ -1,32 +1,21 @@
 from __future__ import annotations
 from abc import ABC
+from typing import Annotated
 
 import pydantic
 
 
 """
-# Same resutl than ConstrainedInt and ConstrainedFloat
-
-class NumberOfFilaments(pydantic.conint(gt=0)):
-    pass
-
-
-class Attenuation(pydantic.confloat(gt=0)):
-    pass
+pydantic v2 removed ConstrainedInt and ConstrainedFloat,
+constraints are declared with Annotated instead
 """
 
-
-class NumberOfFilaments(pydantic.ConstrainedInt):
-    gt = 0
-
-
-class Attenuation(pydantic.ConstrainedFloat):
-    gt = 0
+NumberOfFilaments = Annotated[int, pydantic.Field(gt=0)]
+Attenuation = Annotated[float, pydantic.Field(gt=0)]
 
 
 class TechSpec(pydantic.BaseModel, ABC):
-    class Config:
-        frozen = True
+    model_config = pydantic.ConfigDict(frozen=True)
 
 
 class AttenuationTechSpec(TechSpec):
@@ -35,10 +24,10 @@ class AttenuationTechSpec(TechSpec):
 
     @ classmethod
     def from_primitives(cls, primitives: dict) -> AttenuationTechSpec:
-        return cls(**primitives)
+        return cls.model_validate(primitives)
 
     def to_primitives(self) -> dict:
-        return self.dict()
+        return self.model_dump()
 
 
 class NumberOfFilamentsTechSpec(TechSpec):

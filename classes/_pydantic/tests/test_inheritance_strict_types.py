@@ -2,6 +2,8 @@
 
 import unittest
 
+import pydantic
+
 from classes._pydantic import ConnectorTechSpecStrictType, CableTechSpecStrictType
 
 
@@ -19,8 +21,8 @@ class TestInheritanceConnectorPydanticStrictTypes(unittest.TestCase):
             attenuation_1310nm=0.5,
             attenuation_1550nm=0.6
         )
-        # pydantic raises TypeError when object is inmutable
-        with self.assertRaises(TypeError):
+        # pydantic raises ValidationError when object is inmutable
+        with self.assertRaises(pydantic.ValidationError):
             tech_spec.attenuation_1310nm = 0.5
 
     def test_connector_tech_spec_error_when_attenuation_default_is_invalid(self):

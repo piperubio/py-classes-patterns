@@ -2,6 +2,8 @@
 
 import unittest
 
+import pydantic
+
 from classes._pydantic import ID
 
 
@@ -45,26 +47,23 @@ class TestVOPydantic(unittest.TestCase):
 
     def test_raise_error_when_try_change_value(self):
         id_instance = ID(value="test-id")
-        # pydantic use TypeError instead of AttributeError
-        with self.assertRaises(TypeError):
+        # pydantic use ValidationError instead of AttributeError
+        with self.assertRaises(pydantic.ValidationError):
             id_instance.value = "test-id-2"
 
     def test_raise_error_when_try_delete_value(self):
         id_instance = ID(value="test-id")
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(pydantic.ValidationError):
             del id_instance.value
 
     def test_raise_error_when_try_delete_value_attr(self):
         id_instance = ID(value="test-id")
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(pydantic.ValidationError):
             delattr(id_instance, "value")
 
-    @unittest.skip("Pydantic parse int to str")
     def test_raise_error_when_value_is_not_str(self):
         """ pydantic use ValidationError(ValueError) instead of TypeError,
-            also pydantic parse value as str if it can
-            example 1 -> "1"
-            example True -> "True" 
+            pydantic v2 does not parse int to str (v1 did: 1 -> "1")
         """
         with self.assertRaises(ValueError):
             _ = ID(value=1)

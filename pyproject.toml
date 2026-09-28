@@ -1,19 +1,18 @@
-[tool.poetry]
+[project]
 name = "py-classes"
 version = "0.1.0"
-description = ""
-authors = ["krouw <felipe.andrez@live.cl>"]
+description = "Compare native classes, dataclasses, attrs, cattrs and pydantic for nested class structures and casting"
+readme = "README.md"
+authors = [{ name = "krouw", email = "felipe.andrez@live.cl" }]
+requires-python = ">=3.9"
+dependencies = [
+    "pydantic>=2.13.0,<3.0.0",
+    "nanoid>=2.0.0,<3.0.0",
+    "attrs>=21.4.0,<22.0.0",
+    "cattrs>=1.10.0,<2.0.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-pydantic = "^1.9.0"
-nanoid = "^2.0.0"
-attrs = "^21.4.0"
-cattrs = "^1.10.0"
-
-[tool.poetry.dev-dependencies]
-autopep8 = "^1.6.0"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "autopep8>=1.6.0,<2.0.0",
+]

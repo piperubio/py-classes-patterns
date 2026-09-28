@@ -2,14 +2,14 @@ import pydantic
 
 
 class IntValueVO(pydantic.BaseModel):
-    value: pydantic.conint(gt=0)  # type: ignore
+    value: int = pydantic.Field(gt=0)
 
 
 class BaseVO(pydantic.BaseModel):
     a: int
     """
-    b: IntValueVO = IntValueVO(value=0) 
-    raise ERROR pydantic.error_wrappers.ValidationError: 1 validation error for IntValueVO
+    b: IntValueVO = IntValueVO(value=0)
+    raise ERROR pydantic.ValidationError: 1 validation error for IntValueVO
     """
     b: IntValueVO = IntValueVO(value=1)
 
